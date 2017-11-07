@@ -1,0 +1,59 @@
+<html>
+<head>
+	<title>Linguagens Formais e Compiladores - T2</title>
+	<meta http-equiv="Content-type" content="text/html;charset=utf-8">
+	<script src="Utilities.js"></script>
+	<script src="Workspace.js"></script>
+	<script src="Main.js"></script>
+	<!-- <script src="CFG.js"></script> -->
+	<script src="RG.js"></script>
+	<script src="FiniteAutomaton.js"></script>
+	<script src="Node.js"></script>
+	<script src="Regex.js"></script>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<div class="content" id="rg_content">
+		<div class="sidebar">
+			<p>Grammar</p>
+			<div id="rg_add">
+				<textarea id="rg"></textarea>
+				<input type="button" id="analyze_btn" value="Add">
+			</div>
+			<div id="button_bar"></div>
+			<div id="current_rg"></div>
+		</div>
+		<div class="main" id="rg_main"></div>
+	</div>
+	<div class="content" id="er_content">
+		<div class="sidebar">
+			<p>Regular Expression</p>
+			<div id="regex_add">
+				<input type="button" id="add_btn" value="Add">
+				<div class="input-wrapper">
+					<input type="text" id="regex" value="(ab|ac)*(a|b|c)" placeholder="expression here...">
+				</div>
+			</div>
+			<table id="regex_list"></table>
+			<div id="button_bar">
+				<table>
+					<tr>
+						<td><input type="button" id="delete_btn" class="action_btn" value="Delete"></td>
+						<td><input type="button" id="minimize_btn" class="action_btn" value="Minimize"></td>
+						<td><input type="button" id="gr_btn" class="action_btn" value="GR"></td>
+					</tr>
+					<tr>
+						<td><input type="button" id="intersect_btn" class="action_btn" value="Intersect"></td>
+						<td><input type="button" id="equivalence_btn" class="action_btn" value="Equivalence"></td>
+						<td><input type="button" id="union_btn" class="action_btn" value="Union"></td>
+					</tr>
+				</table>
+			</div>
+			<div id="equivalence_result"></div>
+			<div id="button_bar"></div>
+		</div>
+		<div class="main" id="er_main"></div>
+	</div>
+	<script src="DevHelper.js"></script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+body {
+	font-family: arial;
+	font-size: 16px;
+	margin: 0;
+}
+
+#button_bar td {
+	width: 50%;
+}
+
+#file_selector {
+	display: none;
+}
+
+#file_buttons {
+	margin-bottom: 5px;
+	text-align: center;
+}
+
+.content {
+	display: table;
+	height: 50%;
+}
+
+.sidebar {
+	border-right: 1px solid black;
+	display: table-cell;
+	max-width: 250px;
+	min-width: 250px;
+	padding: 5px;
+	vertical-align: top;
+	width: 250px;
+}
+
+.main {
+	display: table-cell;
+	width: 100%;
+}
+
+#rg_content {
+	border-bottom: 1px solid black;
+}
+
+#rg_add {
+	text-align: center;
+}
+
+#rg {
+	height: 200px;
+	width: 100%;
+	position: relative;
+	z-index: 99;
+}
+
+#analyze_btn {
+	margin-top: 5px;
+}
+
+#button_bar table {
+	text-align: center;
+	width: 100%;
+}
+
+#current_rg {
+	font-size: 20px;
+	font-family: monospace;
+	margin-top: 5px;
+	word-wrap: break-word;
+}
+
+.main tr.antiLL1 td:first-child {
+	color: red;
+	font-weight: bold;
+}
+
+.main th {
+	background-color: #DDD;
+}
+
+.main td, .main th {
+	border: 1px solid black;
+	padding: 5px;
+	text-align: center;
+}
+
+#rg_main td {
+	text-align: left;
+}
+
+span.notOK {
+	color: red;
+}
+
+span.ok {
+	color: green;
+}
+
+.main table.padded th, .main table.padded td {
+	padding: 5px 10px;
+}
+
+.main table.inline {
+	display: inline-table;
+	vertical-align: top;
+}
+
+tr.highlight td:first-child, span.error {
+	color: red;
+	text-decoration: underline;
+}
+
+#regex_list {
+	table-layout: fixed;
+}
+
+.input-wrapper {
+	overflow: hidden;
+	padding-right: .5em;
+}
+
+#regex_add {
+	width: inherit;
+	margin-bottom: 5px;
+}
+
+#add_btn {
+	float: right;
+}
+
+#regex {
+	width: 100%;
+	padding-left: 2px;
+}
+
+#regex_list {
+	white-space: pre;
+	width: 100%;
+}
+
+#regex_list td:last-child, #button_bar {
+	text-align: center;
+}
+
+.automaton, .grammar {
+	display: inline-table;
+	margin-right: 20px;
+	table-layout: fixed;
+}
+
+.automaton td, .automaton th {
+	border: 1px solid black;
+	padding: 10px;
+	text-align: center;
+}
+
+.automaton th {
+	background-color: #DDD;
+}
+
+.automaton .accepting_state {
+	vertical-align: sub;
+}
