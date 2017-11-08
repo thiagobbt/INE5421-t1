@@ -266,6 +266,12 @@ window.Workspace = function() {
 
 					if (minimized.stateList.length > 0) {
 						response += "not empty, ";
+
+						if (minimized.isCyclic()) {
+							response += "is infinite.";
+						} else {
+							response += "is finite."
+						}
 					} else {
 						response += "empty.";
 					}

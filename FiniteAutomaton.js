@@ -706,6 +706,68 @@ window.FiniteAutomaton = function() {
 
 		window.workspace.addRegularGrammar(rg);
 	}
+
+	function findVertex(name, vertices) {
+		return vertices.filter(obj => (obj.name == name))[0];
+	}
+
+	function exceptVertex(name, vertices) {
+		return vertices.filter(obj => (obj.name != name));
+	}
+
+	this.isCyclic = function() {
+		// Use Kahn topological sorting to check for cycles
+		var L = [];
+
+		var vertices = [];
+		this.stateList.forEach((state) => {
+			vertices.push({name: state, previousVertices: [], nextVertices: []});
+		});
+
+		var S = [findVertex(this.initialState, vertices)];
+
+		vertices.forEach((vertex) => {
+			if (this.transitions[vertex.name]) {
+				for (var input in this.transitions[vertex.name]) {
+					this.transitions[vertex.name][input].forEach((nextVertexName) => {
+						var nextVertex = findVertex(nextVertexName, vertices);
+						vertex.nextVertices.push(nextVertex);
+						nextVertex.previousVertices.push(vertex);
+
+						// vertex.nextVertices = Utilities.removeDuplicates(vertex.nextVertices);
+						// nextVertex.previousVertices = Utilities.removeDuplicates(nextVertex.previousVertices);
+					})
+				};
+			}
+		});
+
+		while (S.length > 0) {
+			var n = S.pop();
+			L.unshift(n);
+
+			var nextVertices = n.nextVertices.slice(0);
+
+			for (var i = 0; i < nextVertices.length; i++) {
+				var nextVertex = nextVertices[i];
+				n.nextVertices = exceptVertex(nextVertex.name, n.nextVertices);
+				nextVertex.previousVertices = exceptVertex(n.name, nextVertex.previousVertices);
+
+				if (nextVertex.previousVertices.length == 0) {
+					S.push(nextVertex);
+				}
+			}
+		}
+
+		console.log(vertices);
+
+		for (var i = 0; i < vertices.length; i++) {
+			if (vertices[i].previousVertices.length > 0 || vertices[i].nextVertices.length > 0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 };
 
 // Receives a JSON representation of an automaton and returns
