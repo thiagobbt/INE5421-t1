@@ -31,20 +31,24 @@ var pointers = function() {
 	return $(".productionPointer");
 };
 
+var automatonCloseButton = function() {
+	return $(".close-button");
+};
+
+var automatonGrammarButton = function() {
+	return $(".to-grammar-button");
+}
+
+var automatonDeterminizeButton = function() {
+	return $(".determinize-button");
+}
+
+var grammarAutomatonButton = function() {
+	return $(".to-automaton-button");
+}
+
 var productionContainer = function(index) {
 	return $("#prod" + index);
-};
-
-var simulatorInput = function() {
-	return $("#simulator_input");
-};
-
-var simulateButton = function() {
-	return $("#simulate_btn");
-};
-
-var simulationResults = function() {
-	return $("#simulationResults");
 };
 
 var regexList = function() {
@@ -102,10 +106,20 @@ var nextID = 0;
 // Returns an object containing a regex, its corresponding
 // automaton and an ID.
 function buildExprObject(regex) {
+	var id = nextID++;
+	var automaton = null;
+
+	if (!regex) {
+		regex = new Regex("");
+		regex.string = "Grammar [" + id + "]";
+	} else {
+		automaton = regex.toFiniteAutomaton();
+	}
+
 	return {
-		id: nextID++,
-		regex: (regex) ? regex : new Regex(""),
-		automaton: (regex) ? regex.toFiniteAutomaton() : null
+		id: id,
+		regex: regex,
+		automaton: automaton
 	};
 }
 
@@ -119,6 +133,17 @@ window.Workspace = function() {
 	function updateGrammarUI() {
 		// rgContainer().innerHTML = "";
 		updateEvents();
+
+		if (grammarAutomatonButton()) {
+			grammarAutomatonButton().forEach((btn) => {
+				btn.onclick = function() {
+					var newAutomaton = this.parentElement.parentElement.parentElement.grammar.toFiniteAutomaton();
+					var obj = buildExprObject(null);
+					obj.automaton = newAutomaton;
+					self.addObject(obj);
+				}
+			});
+		}
 	}
 
 	function updateRegexUI() {
@@ -132,6 +157,53 @@ window.Workspace = function() {
 		unionButton().style.display = (numChecked == 2) ? visible : "none";
 		equivalenceButton().style.display = (numChecked == 2) ? visible : "none";
 		equivalenceLabel().innerHTML = "";
+
+		if (automatonCloseButton()) {
+			automatonCloseButton().forEach((btn) => {
+				btn.onclick = function() {
+					var id = this.parentElement.parentElement.parentElement.id.replace("aut", "");
+
+					var automatonNode = $("#" + genAutomatonID(id));
+					if (automatonNode) {
+						automatonNode.parentElement.removeChild(automatonNode);
+					}
+
+					var regexNode = $("#" + genRegexID(id));
+					if (regexNode) {
+						regexNode.parentElement.removeChild(regexNode);
+					}
+
+					delete self.expressionList[id];
+
+					updateRegexUI();
+				}
+			});
+		}
+
+		if (automatonGrammarButton()) {
+			automatonGrammarButton().forEach((btn) => {
+				btn.onclick = function() {
+					var id = this.parentElement.parentElement.parentElement.id.replace("aut", "");
+					self.expressionList[id].automaton.toGrammar();
+					// console.log(self.expressionList[id]);
+				}
+			});
+		}
+
+		if (automatonDeterminizeButton()) {
+			automatonDeterminizeButton().forEach((btn) => {
+				btn.onclick = function() {
+					var automatonTable = this.parentElement.parentElement.parentElement;
+					var id = automatonTable.id.replace("aut", "");
+
+					var automaton = self.expressionList[id].automaton;
+					automaton.determinize();
+					automatonTable.parentElement.removeChild(automatonTable);
+					self.update(self.expressionList[id]);
+					// console.log(self.expressionList[id]);
+				}
+			});
+		}
 	}
 
 	this.updateRegexUI = updateRegexUI;
@@ -139,18 +211,6 @@ window.Workspace = function() {
 	// Updates all interface-related events.
 	function updateEvents() {
 		updatePointerEvents();
-		if (simulateButton()) {
-			simulateButton().addEventListener("click", function() {
-				var rgContainer = simulationResults();
-				if (rgContainer) {
-					rgContainer.parentElement.removeChild(rgContainer);
-				}
-
-				var output = self.currentRG.evaluate(simulatorInput().value);
-				printSimulatorOutput(output);
-				updatePointerEvents();
-			});
-		}
 	}
 
 	// Updates all production pointer-related events.
@@ -172,23 +232,28 @@ window.Workspace = function() {
 		alert(message);
 	};
 
-	function printGrammar(grammarString) {
+	function printGrammar(grammar) {
 		var table = node("table");
 		var headerRow = node("tr");
 		var header = node("th");
 
-		header.innerHTML = "Grammar";
+		header.innerHTML = "Grammar &nbsp;";
 		header.colSpan = 1;
+
+		var toAutomatonButton = node("button");
+		toAutomatonButton.innerText = "Automaton";
+		toAutomatonButton.classList.add("to-automaton-button");
+		header.appendChild(toAutomatonButton);
 
 		table.classList.add("padded");
 		table.classList.add("inline");
-		table.grammar = grammarString;
+		table.grammar = grammar;
 
 		headerRow.appendChild(header);
 		table.appendChild(headerRow);
 
 		var row = node("td");
-		row.innerHTML = grammarString.replace(/</g, '&lt;').replace(/([^-])>/g, '$1&gt;').replace(/\n/g, "<br>");
+		row.innerHTML = grammar.string.replace(/</g, '&lt;').replace(/([^-])>/g, '$1&gt;').replace(/\n/g, "<br>");
 
 		// row.appendChild(cell);
 		table.appendChild(row);
@@ -213,7 +278,7 @@ window.Workspace = function() {
 		}
 
 		// currentRgContainer().innerHTML = instance.string.replace(/</g, '&lt;').replace(/([^-])>/g, '$1&gt;').replace(/\n/g, "<br>");
-		printGrammar(instance.string);
+		printGrammar(instance);
 		updateGrammarUI();
 		return true;
 	};
@@ -225,7 +290,11 @@ window.Workspace = function() {
 
 		var regexCell = node("td");
 		regexCell.className = "ertd";
-		regexCell.innerHTML = obj.regex.string;
+		if (obj.regex.string) {
+			regexCell.innerHTML = obj.regex.string;
+		} else {
+			regexCell.innerHTML = "Grammar [" + obj.id + "]";
+		}
 		row.appendChild(regexCell);
 
 		var checkboxCell = node("td");
@@ -399,7 +468,29 @@ window.Workspace = function() {
 			var header = node("tr");
 			var cell = node("th");
 			cell.colSpan = alphabet.length + 1;
-			cell.innerHTML = regex.string;
+			cell.innerHTML = "From: ";
+			if (regex.string) {
+				cell.innerHTML += regex.string;
+			} else {
+				cell.innerHTML += "Grammar [" + obj.id + "]";
+			}
+			cell.innerHTML += "&nbsp;";
+
+			var closeButton = node("button");
+			closeButton.innerText = "✕";
+			closeButton.classList.add("close-button");
+			cell.appendChild(closeButton);
+
+			var toGrammarButton = node("button");
+			toGrammarButton.innerText = "RG";
+			toGrammarButton.classList.add("to-grammar-button");
+			cell.appendChild(toGrammarButton);
+
+			var determinizeButton = node("button");
+			determinizeButton.innerText = "Determinize";
+			determinizeButton.classList.add("determinize-button");
+			cell.appendChild(determinizeButton);
+
 			header.appendChild(cell);
 			table.appendChild(header);
 
@@ -508,6 +599,8 @@ window.Workspace = function() {
 		if (!regexNode) {
 			regexList().appendChild(regexListItem(obj));
 		}
+
+		updateRegexUI();
 	};
 };
 

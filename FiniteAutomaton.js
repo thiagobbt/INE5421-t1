@@ -124,11 +124,12 @@ window.FiniteAutomaton = function() {
 	// Note that this might fail if there's a state already following
 	// the usual naming conventions, as it is designed and optimized to work
 	// specifically with the intersection method, in which that never occurs.
-	this.renameStates = function() {
+	this.renameStates = function(generator) {
+		if (!generator) generator = Utilities.generateStateName;
 		var mapping = {};
 		for (var i = 0; i < self.stateList.length; i++) {
 			var state = self.stateList[i];
-			var newName = Utilities.generateStateName(i);
+			var newName = generator(i);
 			self.replaceState(state, newName);
 			self.transitions[newName] = self.transitions[state];
 			delete self.transitions[state];
@@ -397,6 +398,75 @@ window.FiniteAutomaton = function() {
 		result.removeEquivalentStates();
 		return result;
 	};
+
+	function determinizationHelper(transitions) {
+		var originalTransitions = transitions.slice(0);
+		var newState = transitions.join("");
+		transitions.length = 0;
+		transitions.push(newState);
+
+		if (!self.stateList.includes(newState)) {
+			self.addState(newState);
+			var accepting = false;
+
+			var newStateTransitions = {};
+
+			for (var i = 0; i < originalTransitions.length; i++) {
+				accepting = accepting || self.acceptingStates.includes(originalTransitions[i]);
+
+				var nextState = originalTransitions[i];
+
+				var nextStateTransitions = self.transitions[nextState];
+
+				for (var input in nextStateTransitions) {
+					if (!newStateTransitions.hasOwnProperty()) {
+						newStateTransitions[input] = [];
+					}
+
+					nextStateTransitions[input].forEach((state) => {newStateTransitions[input].push(state)});
+				}
+			}
+
+			self.transitions[newState] = newStateTransitions;
+
+			for (var input in newStateTransitions) {
+				if (self.transitions[newState][input].length > 1) {
+					console.log("found indeterminism");
+					determinizationHelper(self.transitions[newState][input]);
+				}
+			}
+
+			if (accepting) {
+				self.acceptState(newState);
+			}
+		}
+	}
+
+	this.determinize = function() {
+		for (var state in this.transitions) {
+			var transitions = this.transitions[state];
+			for (var input in transitions) {
+				if (transitions[input].length > 1) {
+					console.log("found indeterminism");
+					determinizationHelper(transitions[input]);
+				}
+			}
+		}
+
+		this.removeUselessStates();
+
+		// var stateListClone = this.stateList.slice(0);
+
+		// // Make sure there won't be any conflicting state names
+		// for (var i = 0; i < stateListClone.length; i++) {
+		// 	var state = stateListClone[i];
+		// 	this.replaceState(state, state + "Z");
+		// }
+
+		this.renameStates(Utilities.generateOtherStateName);
+		this.renameStates();
+		console.log(this);
+	}
 
 	// Returns a new automaton whose recognized language is the complement
 	// of this one.

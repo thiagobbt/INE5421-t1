@@ -571,6 +571,36 @@ window.RG = function(rgStr) {
 	// 	return [stack.length == 0, history];
 	// };
 
+	this.toFiniteAutomaton = function() {
+		var automaton = new FiniteAutomaton();
+
+		Object.keys(this.productions).forEach((state) => {
+			automaton.addState(state);
+		});
+
+		automaton.initialState = this.initialSymbol;
+
+		for (var currentSymbol in this.productions) {
+			for (var i = 0; i < this.productions[currentSymbol].length; i++) {
+				var production = this.productions[currentSymbol][i];
+				var input = production[0];
+				var nextSymbol = production[1];
+
+				if (input == '&') {
+					automaton.acceptState(currentSymbol);
+				} else if (!nextSymbol) {
+					var newState = currentSymbol + "'";
+					automaton.addState(newState);
+					automaton.addTransition(currentSymbol, input, newState);
+					automaton.acceptState(newState);
+				} else {
+					automaton.addTransition(currentSymbol, input, nextSymbol);
+				}
+			}
+		}
+		return automaton;
+	};
+
 	if (rgStr) {
 		var lines = rgStr.split("\n");
 		for (var i = 0; i < lines.length; i++) {

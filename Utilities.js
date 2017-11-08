@@ -189,6 +189,15 @@ window.Utilities = {
 		return name;
 	},
 
+	generateOtherStateName: function(n) {
+		var name = String.fromCharCode(65 + (n % 26));
+		var numApostrophes = Math.floor(n / 26);
+		for (var i = 0; i < numApostrophes; i++) {
+			name += "'";
+		}
+		return name + "_";
+	},
+
 	// Checks if two arrays are equal.
 	isSameArray: function(arr1, arr2) {
 		if (arr1.length != arr2.length) return false;
