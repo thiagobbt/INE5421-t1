@@ -9,6 +9,7 @@ var INITIAL_STATE = "➞";
 var ACCEPTING_STATE = "<span class='accepting_state'>*</span>";
 var TRANSITION_SYMBOL = "δ";
 var MINIMIZED_PREFIX = "[MIN]";
+var DETERMINIZED_PREFIX = "[DET]";
 var INTERSECTION_PREFIX = "[∩]";
 var UNION_PREFIX = "[∪]";
 var COMPLEMENT_PREFIX = "[NOT]";
@@ -43,13 +44,25 @@ var automatonDeterminizeButton = function() {
 	return $(".determinize-button");
 }
 
+var automatonMinimizeButton = function() {
+	return $(".minimize-button");
+}
+
+var automatonComplementButton = function() {
+	return $(".complement-button");
+}
+
 var grammarAutomatonButton = function() {
 	return $(".to-automaton-button");
 }
 
-var productionContainer = function(index) {
-	return $("#prod" + index);
-};
+var grammarCloseButton = function() {
+	return $(".close-grammar-button");
+}
+
+var analyzeLanguageButton = function() {
+	return $(".analyze-language-button");
+}
 
 var regexList = function() {
 	return $("#regex_list");
@@ -57,14 +70,6 @@ var regexList = function() {
 
 var deleteButton = function() {
 	return $("#delete_btn");
-};
-
-var minimizeButton = function() {
-	return $("#minimize_btn");
-};
-
-var grButton = function() {
-	return $("#gr_btn");
 };
 
 var intersectionButton = function() {
@@ -103,36 +108,38 @@ var genRegexID = function(id) {
 
 var nextID = 0;
 
-// Returns an object containing a regex, its corresponding
-// automaton and an ID.
-function buildExprObject(regex) {
-	var id = nextID++;
-	var automaton = null;
-
-	if (!regex) {
-		regex = new Regex("");
-		regex.string = "Grammar [" + id + "]";
-	} else {
-		automaton = regex.toFiniteAutomaton();
-	}
-
-	return {
-		id: id,
-		regex: regex,
-		automaton: automaton
-	};
-}
-
 window.Workspace = function() {
 	var self = this;
-	this.currentRG = null;
+	this.currentRegularGrammar = null;
 	this.expressionList = {};
 
+	// Returns an object containing a regex, its corresponding
+	// automaton and an ID.
+	function buildExprObject(regex) {
+		var id = nextID++;
+		var automaton = null;
+
+		if (!regex) {
+			regex = new Regex("");
+			regex.string = "Grammar [" + id + "]";
+		} else {
+			automaton = regex.toFiniteAutomaton();
+		}
+
+		return {
+			id: id,
+			regex: regex,
+			automaton: automaton
+		};
+	}
+
+	this.buildExprObject = buildExprObject;
+
 	// Updates the UI, replacing all previous content with the informations
-	// about the current RG.
+	// about the current RegularGrammar.
 	function updateGrammarUI() {
 		// rgContainer().innerHTML = "";
-		updateEvents();
+		// updateEvents();
 
 		if (grammarAutomatonButton()) {
 			grammarAutomatonButton().forEach((btn) => {
@@ -144,6 +151,15 @@ window.Workspace = function() {
 				}
 			});
 		}
+
+		if (grammarCloseButton()) {
+			grammarCloseButton().forEach((btn) => {
+				btn.onclick = function() {
+					var grammar = this.parentElement.parentElement.parentElement;
+					grammar.parentElement.removeChild(grammar);
+				}
+			});
+		}
 	}
 
 	function updateRegexUI() {
@@ -151,8 +167,8 @@ window.Workspace = function() {
 		var numChecked = checked.length;
 		var visible = "inline";
 		deleteButton().style.display = (numChecked > 0) ? visible : "none";
-		minimizeButton().style.display = (numChecked == 1) ? visible : "none";
-		grButton().style.display = (numChecked == 1) ? visible : "none";
+		// minimizeButton().style.display = (numChecked == 1) ? visible : "none";
+		// grButton().style.display = (numChecked == 1) ? visible : "none";
 		intersectionButton().style.display = (numChecked == 2) ? visible : "none";
 		unionButton().style.display = (numChecked == 2) ? visible : "none";
 		equivalenceButton().style.display = (numChecked == 2) ? visible : "none";
@@ -196,36 +212,70 @@ window.Workspace = function() {
 					var automatonTable = this.parentElement.parentElement.parentElement;
 					var id = automatonTable.id.replace("aut", "");
 
-					var automaton = self.expressionList[id].automaton;
-					automaton.determinize();
-					automatonTable.parentElement.removeChild(automatonTable);
-					self.update(self.expressionList[id]);
-					// console.log(self.expressionList[id]);
+
+					var expr = self.expressionList[id];
+					var clone = buildExprObject(null);
+					clone.regex.string = DETERMINIZED_PREFIX + " " + expr.regex.string;
+					clone.automaton = expr.automaton.determinize();
+					self.addObject(clone);
+				}
+			});
+		}
+
+		if (automatonMinimizeButton()) {
+			automatonMinimizeButton().forEach((btn) => {
+				btn.onclick = function() {
+					var automatonTable = this.parentElement.parentElement.parentElement;
+					var id = automatonTable.id.replace("aut", "");
+
+					var expr = self.expressionList[id];
+					var clone = buildExprObject(null);
+					clone.regex.string = MINIMIZED_PREFIX + " " + expr.regex.string;
+					clone.automaton = expr.automaton.minimize();
+					self.addObject(clone);
+				}
+			});
+		}
+
+		if (automatonComplementButton()) {
+			automatonComplementButton().forEach((btn) => {
+				btn.onclick = function() {
+					var automatonTable = this.parentElement.parentElement.parentElement;
+					var id = automatonTable.id.replace("aut", "");
+
+					var complement = buildComplementObj(self.expressionList[id]);
+					self.addObject(complement);
+				}
+			});
+		}
+
+		if (analyzeLanguageButton()) {
+			analyzeLanguageButton().forEach((btn) => {
+				btn.onclick = function() {
+					var response = "Language is ";
+					var automatonTable = this.parentElement.parentElement.parentElement;
+					var id = automatonTable.id.replace("aut", "");
+
+					var expr = self.expressionList[id];
+
+					var minimized = expr.automaton.minimize();
+					var minimizedObj = buildExprObject(null);
+					minimizedObj.regex.string = MINIMIZED_PREFIX + " " + expr.regex.string;
+					minimizedObj.automaton = minimized;
+					self.addObject(minimizedObj);
+
+					if (minimized.stateList.length > 0) {
+						response += "not empty, ";
+					} else {
+						response += "empty.";
+					}
+
+					equivalenceLabel().innerHTML = response;
 				}
 			});
 		}
 	}
-
 	this.updateRegexUI = updateRegexUI;
-
-	// Updates all interface-related events.
-	function updateEvents() {
-		updatePointerEvents();
-	}
-
-	// Updates all production pointer-related events.
-	function updatePointerEvents() {
-		var pointerList = pointers();
-		for (var i = 0; i < pointerList.length; i++) {
-			var element = pointerList[i];
-			element.addEventListener("mouseover", function() {
-				productionContainer(this.innerHTML).classList.add("highlight");
-			});
-			element.addEventListener("mouseout", function() {
-				productionContainer(this.innerHTML).classList.remove("highlight");
-			});
-		}
-	}
 
 	// Shows an error to the user.
 	this.error = function(message) {
@@ -235,22 +285,31 @@ window.Workspace = function() {
 	function printGrammar(grammar) {
 		var table = node("table");
 		var headerRow = node("tr");
+		var subHeaderRow = node("tr");
 		var header = node("th");
+		var subHeader = node("th");
 
 		header.innerHTML = "Grammar &nbsp;";
 		header.colSpan = 1;
 
+		var closeGrammar = node("button");
+		closeGrammar.innerText = "✕";
+		closeGrammar.classList.add("close-grammar-button");
+		subHeader.appendChild(closeGrammar);
+
 		var toAutomatonButton = node("button");
 		toAutomatonButton.innerText = "Automaton";
 		toAutomatonButton.classList.add("to-automaton-button");
-		header.appendChild(toAutomatonButton);
+		subHeader.appendChild(toAutomatonButton);
 
 		table.classList.add("padded");
 		table.classList.add("inline");
 		table.grammar = grammar;
 
 		headerRow.appendChild(header);
+		subHeaderRow.appendChild(subHeader);
 		table.appendChild(headerRow);
+		table.appendChild(subHeaderRow);
 
 		var row = node("td");
 		row.innerHTML = grammar.string.replace(/</g, '&lt;').replace(/([^-])>/g, '$1&gt;').replace(/\n/g, "<br>");
@@ -261,20 +320,24 @@ window.Workspace = function() {
 		rgContainer().appendChild(table);
 	}
 
-	// Sets the current RG of this workspace.
-	this.setRG = function(rg) {
+	// Sets the current RegularGrammar of this workspace.
+	this.addRegularGrammar = function(rg) {
 		var instance;
 		if (typeof(rg) == "string") {
+			if (rg.trim() == "") {
+				self.error("Grammar can not be empty");
+				return;
+			}
 			try {
-				instance = new RG(rg);
+				instance = new RegularGrammar(rg);
 			} catch (e) {
 				self.error(e);
 				console.log(e);
 				return false;
 			}
-			self.currentRG = instance;
+			self.currentRegularGrammar = instance;
 		} else {
-			self.currentRG = rg;
+			self.currentRegularGrammar = rg;
 		}
 
 		// currentRgContainer().innerHTML = instance.string.replace(/</g, '&lt;').replace(/([^-])>/g, '$1&gt;').replace(/\n/g, "<br>");
@@ -331,45 +394,6 @@ window.Workspace = function() {
 				delete self.expressionList[expr.id];
 			}
 			updateRegexUI();
-		};
-
-		minimizeButton().onclick = function() {
-			var expressions = getCheckedExpressions();
-			if (expressions.length != 1) {
-				self.error(ERROR_INVALID_OPERATION);
-				return;
-			}
-
-			var expr = expressions[0];
-			if (expr.regex.string.startsWith(MINIMIZED_PREFIX)) {
-				self.error(ERROR_ALREADY_MINIMIZED);
-				return;
-			}
-
-			var clone = buildExprObject(null);
-			clone.regex.string = MINIMIZED_PREFIX + " " + expr.regex.string;
-			clone.automaton = expr.automaton.minimize();
-			self.addObject(clone);
-		};
-
-		grButton().onclick = function() {
-			var expressions = getCheckedExpressions();
-			if (expressions.length != 1) {
-				self.error(ERROR_INVALID_OPERATION);
-				return;
-			}
-
-			var expr = expressions[0];
-			// if (expr.regex.string.startsWith(MINIMIZED_PREFIX)) {
-			// 	self.error(ERROR_ALREADY_MINIMIZED);
-			// 	return;
-			// }
-
-			// var clone = buildExprObject(null);
-			// clone.regex.string = MINIMIZED_PREFIX + " " + expr.regex.string;
-			// clone.automaton = expr.automaton.minimize();
-			// self.addObject(clone);
-			expr.automaton.toGrammar();
 		};
 
 		intersectionButton().onclick = function() {
@@ -466,6 +490,9 @@ window.Workspace = function() {
 
 			var alphabet = automaton.getAlphabet();
 			var header = node("tr");
+			var subHeader = node("tr");
+			var subHeader2 = node("tr");
+
 			var cell = node("th");
 			cell.colSpan = alphabet.length + 1;
 			cell.innerHTML = "From: ";
@@ -476,23 +503,47 @@ window.Workspace = function() {
 			}
 			cell.innerHTML += "&nbsp;";
 
+			var actionCell = node("th");
+			var actionCell2 = node("th");
+			actionCell.colSpan = alphabet.length + 1;
+			actionCell2.colSpan = alphabet.length + 1;
+
 			var closeButton = node("button");
 			closeButton.innerText = "✕";
 			closeButton.classList.add("close-button");
-			cell.appendChild(closeButton);
-
-			var toGrammarButton = node("button");
-			toGrammarButton.innerText = "RG";
-			toGrammarButton.classList.add("to-grammar-button");
-			cell.appendChild(toGrammarButton);
+			actionCell.appendChild(closeButton);
 
 			var determinizeButton = node("button");
 			determinizeButton.innerText = "Determinize";
 			determinizeButton.classList.add("determinize-button");
-			cell.appendChild(determinizeButton);
+			actionCell.appendChild(determinizeButton);
+
+			var determinizeButton = node("button");
+			determinizeButton.innerText = "Minimize";
+			determinizeButton.classList.add("minimize-button");
+			actionCell.appendChild(determinizeButton);
+
+			var complementButton = node("button");
+			complementButton.innerText = "Complement";
+			complementButton.classList.add("complement-button");
+			actionCell.appendChild(complementButton);
+
+			var analyzeLanguage = node("button");
+			analyzeLanguage.innerText = "Analyze Language";
+			analyzeLanguage.classList.add("analyze-language-button");
+			actionCell2.appendChild(analyzeLanguage);
+
+			var toGrammarButton = node("button");
+			toGrammarButton.innerText = "Regular Grammar";
+			toGrammarButton.classList.add("to-grammar-button");
+			actionCell2.appendChild(toGrammarButton);
 
 			header.appendChild(cell);
+			subHeader.appendChild(actionCell);
+			subHeader2.appendChild(actionCell2);
 			table.appendChild(header);
+			table.appendChild(subHeader);
+			table.appendChild(subHeader2);
 
 			header = node("tr");
 			cell = node("th");
@@ -524,7 +575,7 @@ window.Workspace = function() {
 				row.appendChild(cell);
 				for (var j = 0; j < alphabet.length; j++) {
 					var content = NO_TRANSITION;
-					if (transitions.hasOwnProperty(state)
+					if (transitions[state]
 						&& transitions[state].hasOwnProperty(alphabet[j])) {
 						content = transitions[state][alphabet[j]];
 					}

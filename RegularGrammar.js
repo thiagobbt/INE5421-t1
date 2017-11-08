@@ -4,7 +4,7 @@
 var DOLLAR = Utilities.DOLLAR;
 var EPSILON = Utilities.EPSILON;
 
-window.RG = function(rgStr) {
+window.RegularGrammar = function(rgStr) {
 	var self = this;
 	this.productions = {};
 	this.initialSymbol = null;
@@ -79,7 +79,7 @@ window.RG = function(rgStr) {
 		}
 	};
 
-	// An utility function used to iterate over all productions of this RG,
+	// An utility function used to iterate over all productions of this RegularGrammar,
 	// executing a callback function on each one providing their name and list
 	// of produced symbols.
 	function productionIteration(callback) {
@@ -118,7 +118,7 @@ window.RG = function(rgStr) {
 	}
 
 	// Receives a string representation of a group of productions
-	// involving one non-terminal and adds all of them to this RG.
+	// involving one non-terminal and adds all of them to this RegularGrammar.
 	this.addProductions = function(str) {
 		var productions = stringToProduction(str);
 		if (!productions) {
@@ -135,7 +135,7 @@ window.RG = function(rgStr) {
 	};
 
 	// Receives the informations about a production and adds it
-	// to this RG.
+	// to this RegularGrammar.
 	this.addProduction = function(name, symbolSequence) {
 		if (!self.productions.hasOwnProperty(name)) {
 			self.productions[name] = [];
@@ -147,7 +147,7 @@ window.RG = function(rgStr) {
 	};
 
 	// Receives the informations about a production and removes it
-	// from this RG.
+	// from this RegularGrammar.
 	this.removeProduction = function(name, symbolSequence) {
 		if (!self.productions.hasOwnProperty(name)) {
 			return;
@@ -158,12 +158,12 @@ window.RG = function(rgStr) {
 		}
 	};
 
-	// Returns a list containing all non-terminals of this RG.
+	// Returns a list containing all non-terminals of this RegularGrammar.
 	this.getNonTerminals = function() {
 		return Object.keys(self.productions);
 	};
 
-	// Returns a list containing all terminals of this RG.
+	// Returns a list containing all terminals of this RegularGrammar.
 	this.getTerminals = function() {
 		var result = [];
 		productionIteration(function(name, production) {

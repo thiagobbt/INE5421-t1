@@ -393,13 +393,21 @@ window.FiniteAutomaton = function() {
 
 	// Returns the minimized form of this automaton.
 	this.minimize = function() {
-		var result = self.copy();
+		// var result = self.copy();
+		var determinized = self.determinize();
+
+		var detObj = workspace.buildExprObject(null);
+		detObj.regex.string = "[DET] Intermediary step";
+		detObj.automaton = determinized;
+		workspace.addObject(detObj);
+
+		var result = determinized.copy();
 		result.removeUselessStates();
 		result.removeEquivalentStates();
 		return result;
 	};
 
-	function determinizationHelper(transitions) {
+	this.determinizationHelper = function(transitions) {
 		var originalTransitions = transitions.slice(0);
 		var newState = transitions.join("");
 		transitions.length = 0;
@@ -443,29 +451,25 @@ window.FiniteAutomaton = function() {
 	}
 
 	this.determinize = function() {
-		for (var state in this.transitions) {
-			var transitions = this.transitions[state];
+		var result = self.copy();
+
+		for (var state in result.transitions) {
+			var transitions = result.transitions[state];
 			for (var input in transitions) {
 				if (transitions[input].length > 1) {
-					console.log("found indeterminism");
-					determinizationHelper(transitions[input]);
+					// console.log("found indeterminism");
+					result.determinizationHelper(transitions[input]);
 				}
 			}
 		}
 
-		this.removeUselessStates();
+		result.removeUselessStates();
 
-		// var stateListClone = this.stateList.slice(0);
+		// Make sure there won't be any conflicting state names
+		result.renameStates(Utilities.generateOtherStateName);
+		result.renameStates();
 
-		// // Make sure there won't be any conflicting state names
-		// for (var i = 0; i < stateListClone.length; i++) {
-		// 	var state = stateListClone[i];
-		// 	this.replaceState(state, state + "Z");
-		// }
-
-		this.renameStates(Utilities.generateOtherStateName);
-		this.renameStates();
-		console.log(this);
+		return result;
 	}
 
 	// Returns a new automaton whose recognized language is the complement
@@ -565,6 +569,8 @@ window.FiniteAutomaton = function() {
 			for (var i = 0; i < acceptingPairs.length; i++) {
 				result.acceptState(acceptingPairs[i].join(""));
 			}
+
+			result.acceptingStates = Utilities.removeDuplicates(result.acceptingStates);
 
 			result.initialState = self.initialState + other.initialState;
 			result.renameStates();
@@ -675,7 +681,7 @@ window.FiniteAutomaton = function() {
 		// console.log("grammar: ");
 		// console.log(grammar);
 
-		// var rg = new RG();
+		// var rg = new RegularGrammar();
 		var rg = "";
 
 		for (var state in grammar.states) {
@@ -698,7 +704,7 @@ window.FiniteAutomaton = function() {
 		// console.log(rg);
 		// rg.checkConsistency();
 
-		window.workspace.setRG(rg);
+		window.workspace.addRegularGrammar(rg);
 	}
 };
 

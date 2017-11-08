@@ -56,7 +56,7 @@ addEventListener("load", function() {
 	workspace.initEvents();
 
 	$("#analyze_btn").addEventListener("click", function() {
-		if (workspace.setRG($("#rg").value)) {
+		if (workspace.addRegularGrammar($("#rg").value)) {
 			$("#rg").value = "";
 		}
 	});

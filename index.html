@@ -6,7 +6,7 @@
 	<script src="Workspace.js"></script>
 	<script src="Main.js"></script>
 	<!-- <script src="CFG.js"></script> -->
-	<script src="RG.js"></script>
+	<script src="RegularGrammar.js"></script>
 	<script src="FiniteAutomaton.js"></script>
 	<script src="Node.js"></script>
 	<script src="Regex.js"></script>
@@ -17,7 +17,7 @@
 		<div class="sidebar">
 			<p>Grammar</p>
 			<div id="rg_add">
-				<textarea id="rg"></textarea>
+				<textarea id="rg" placeholder="regular grammar here"></textarea>
 				<input type="button" id="analyze_btn" value="Add">
 			</div>
 			<div id="button_bar"></div>
@@ -31,7 +31,7 @@
 			<div id="regex_add">
 				<input type="button" id="add_btn" value="Add">
 				<div class="input-wrapper">
-					<input type="text" id="regex" value="(ab|ac)*(a|b|c)" placeholder="regular expression here">
+					<input type="text" id="regex" placeholder="regular expression here">
 				</div>
 			</div>
 			<table id="regex_list"></table>
@@ -39,8 +39,8 @@
 				<table>
 					<tr>
 						<td><input type="button" id="delete_btn" class="action_btn" value="Delete"></td>
-						<td><input type="button" id="minimize_btn" class="action_btn" value="Minimize"></td>
-						<td><input type="button" id="gr_btn" class="action_btn" value="RG"></td>
+						<!-- <td><input type="button" id="minimize_btn" class="action_btn" value="Minimize"></td>
+						<td><input type="button" id="gr_btn" class="action_btn" value="RegularGrammar"></td> -->
 					</tr>
 					<tr>
 						<td><input type="button" id="intersect_btn" class="action_btn" value="Intersect"></td>
