@@ -1,4 +1,4 @@
-(function(){
+(function() {
 "use strict";
 
 var ERROR_STATE = "φ";
@@ -36,7 +36,6 @@ window.FiniteAutomaton = function() {
 	// Removes a state of this automaton, also removing all transitions
 	// involving it.
 	this.removeState = function(state) {
-		// console.log("[REMOVE] " + state);
 		if (self.stateList.includes(state)) {
 			for (var source in self.transitions) {
 				if (!self.transitions.hasOwnProperty(source)) continue;
@@ -331,10 +330,6 @@ window.FiniteAutomaton = function() {
 			for (var j = 0; j < alphabet.length; j++) {
 				if (!transitions.hasOwnProperty(state)
 					|| !transitions[state].hasOwnProperty(alphabet[j])) {
-					// if (!materialized) {
-					// 	self.addState(ERROR_STATE);
-					// 	materialized = true;
-					// }
 					self.addTransition(state, alphabet[j], ERROR_STATE);
 				}
 			}
@@ -381,7 +376,6 @@ window.FiniteAutomaton = function() {
 		}
 
 		for (var i = 0; i < partitions.length; i++) {
-			// console.log(partitions[i].join(","));
 			while (partitions[i].length > 1) {
 				var state = partitions[i].pop();
 				self.replaceState(state, partitions[i][0]);
@@ -393,7 +387,6 @@ window.FiniteAutomaton = function() {
 
 	// Returns the minimized form of this automaton.
 	this.minimize = function() {
-		// var result = self.copy();
 		var determinized = self.determinize();
 
 		var detObj = workspace.buildExprObject(null);
@@ -457,7 +450,6 @@ window.FiniteAutomaton = function() {
 			var transitions = result.transitions[state];
 			for (var input in transitions) {
 				if (transitions[input].length > 1) {
-					// console.log("found indeterminism");
 					result.determinizationHelper(transitions[input]);
 				}
 			}
@@ -621,27 +613,10 @@ window.FiniteAutomaton = function() {
 	};
 
 	this.toGrammar = function() {
-		// this.debug();
 		var grammar = {};
 		grammar.states = {}
 
-		// if (self.acceptingStates.includes(self.initialState)) {
-		// 	var newInitialState = self.initialState + "'";
-		// 	grammar.states[newInitialState] = [self.initialState, "&"];
-		// 	grammar.initialState = newInitialState;
-		// } else {
-		// 	grammar.initialState = self.initialState;
-		// }
-
 		grammar.initialState = self.initialState;
-
-		// for (var i = 0; i < self.acceptingStates.length; i++) {
-		// 	var currState = self.acceptingStates[0];
-		// 	if (grammar.states[currState] == null)
-		// 		grammar.states[currState] = [];
-
-		// 	grammar.states[currState].push("&");
-		// }
 
 		for (var currState in self.transitions) {
 			if (grammar.states[currState] == null)
@@ -649,19 +624,9 @@ window.FiniteAutomaton = function() {
 
 			if (self.transitions.hasOwnProperty(currState)) {
 				var transitions = self.transitions[currState];
-				// console.log("transitions["+ currState + "]:");
-				// console.log(transitions);
 				for (var input in transitions) {
 					if (transitions.hasOwnProperty(input)) {
-						// console.log("(" + currState + ", " + input + ") -> " + transitions[input][0]);
-
-						// if (self.transitions.hasOwnProperty(transitions[input][0])) {
-							grammar.states[currState].push(input + " " + transitions[input][0]);
-						// }
-
-						// if (self.acceptingStates.includes(transitions[input][0])) {
-						// 	grammar.states[currState].push(input);
-						// }
+						grammar.states[currState].push(input + " " + transitions[input][0]);
 					}
 				}
 			}
@@ -675,19 +640,11 @@ window.FiniteAutomaton = function() {
 			grammar.states[acceptingState].push("&");
 		});
 
-		// console.log("transitions: ");
-		// console.log(self.transitions);
-
-		// console.log("grammar: ");
-		// console.log(grammar);
-
-		// var rg = new RegularGrammar();
 		var rg = "";
 
 		for (var state in grammar.states) {
 			var productionLine = state + " -> ";
 			var productions = grammar.states[state];
-			// console.log(productions);
 			for (var productionIndex = 0; productionIndex < productions.length; productionIndex++) {
 				productionLine += productions[productionIndex];
 				if (productionIndex < productions.length - 1) {
@@ -695,20 +652,15 @@ window.FiniteAutomaton = function() {
 				}
 			}
 
-			// console.log("Adding productions: " + productionLine);
-			// rg.addProductions(productionLine);
 			rg += productionLine + "\n";
 
 		}
-
-		// console.log(rg);
-		// rg.checkConsistency();
 
 		window.workspace.addRegularGrammar(rg);
 	}
 
 	function findVertex(name, vertices) {
-		return vertices.filter(obj => (obj.name == name))[0];
+		return Array.from(vertices).filter(obj => (obj.name == name))[0];
 	}
 
 	function exceptVertex(name, vertices) {
@@ -716,57 +668,39 @@ window.FiniteAutomaton = function() {
 	}
 
 	this.isCyclic = function() {
-		// Use Kahn topological sorting to check for cycles
-		var L = [];
-
-		var vertices = [];
+		var vertices = new Set([]);
 		this.stateList.forEach((state) => {
-			vertices.push({name: state, previousVertices: [], nextVertices: []});
+			vertices.add({name: state, previousVertices: new Set([]), nextVertices: new Set([])});
 		});
-
-		var S = [findVertex(this.initialState, vertices)];
 
 		vertices.forEach((vertex) => {
 			if (this.transitions[vertex.name]) {
 				for (var input in this.transitions[vertex.name]) {
 					this.transitions[vertex.name][input].forEach((nextVertexName) => {
 						var nextVertex = findVertex(nextVertexName, vertices);
-						vertex.nextVertices.push(nextVertex);
-						nextVertex.previousVertices.push(vertex);
-
-						// vertex.nextVertices = Utilities.removeDuplicates(vertex.nextVertices);
-						// nextVertex.previousVertices = Utilities.removeDuplicates(nextVertex.previousVertices);
+						vertex.nextVertices.add(nextVertex);
+						nextVertex.previousVertices.add(vertex);
 					})
 				};
 			}
 		});
 
-		while (S.length > 0) {
-			var n = S.pop();
-			L.unshift(n);
+		var hasLeafNode = false;
 
-			var nextVertices = n.nextVertices.slice(0);
+		do {
+			var leafNodes = Array.from(vertices).filter((node) => node.nextVertices.size == 0);
+			hasLeafNode = leafNodes.length > 0;
 
-			for (var i = 0; i < nextVertices.length; i++) {
-				var nextVertex = nextVertices[i];
-				n.nextVertices = exceptVertex(nextVertex.name, n.nextVertices);
-				nextVertex.previousVertices = exceptVertex(n.name, nextVertex.previousVertices);
+			leafNodes.forEach((node) => {
+				Array.from(node.previousVertices).forEach((previousNode) => {
+					previousNode.nextVertices.delete(node);
+				});
 
-				if (nextVertex.previousVertices.length == 0) {
-					S.push(nextVertex);
-				}
-			}
-		}
+				vertices.delete(node);
+			});
+		} while (hasLeafNode);
 
-		console.log(vertices);
-
-		for (var i = 0; i < vertices.length; i++) {
-			if (vertices[i].previousVertices.length > 0 || vertices[i].nextVertices.length > 0) {
-				return true;
-			}
-		}
-
-		return false;
+		return vertices.size != 0;
 	}
 };
 
