@@ -546,9 +546,9 @@ window.FiniteAutomaton = function() {
 		return (minimized.acceptingStates.length == 0);
 	};
 
-	// Checks if this automaton's regular language contains another
+	// Checks if this automaton's regular language is contained in another
 	// automaton's regular language.
-	this.contains = function(other) {
+	this.isContained = function(other) {
 		if (other instanceof FiniteAutomaton) {
 			return self.intersection(other.complement()).isEmpty();
 		}
@@ -558,7 +558,7 @@ window.FiniteAutomaton = function() {
 	// Checks if this automaton is equivalent to another one.
 	this.isEquivalentTo = function(other) {
 		if (other instanceof FiniteAutomaton) {
-			return self.contains(other) && other.contains(self);
+			return self.isContained(other) && other.isContained(self);
 		}
 		return false;
 	};

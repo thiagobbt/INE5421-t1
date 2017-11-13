@@ -73,6 +73,10 @@ var equivalenceButton = function() {
 	return $("#equivalence_btn");
 };
 
+var containmentButton = function() {
+	return $("#check_containment_btn");
+}
+
 var equivalenceLabel = function() {
 	return $("#equivalence_result");
 };
@@ -147,6 +151,7 @@ window.Workspace = function() {
 		var visible = "inline";
 		deleteButton().style.display = (numChecked > 0) ? visible : "none";
 		intersectionButton().style.display = (numChecked == 2) ? visible : "none";
+		containmentButton().style.display = (numChecked == 2) ? visible : "none";
 		unionButton().style.display = (numChecked == 2) ? visible : "none";
 		equivalenceButton().style.display = (numChecked == 2) ? visible : "none";
 		equivalenceLabel().innerHTML = "";
@@ -424,6 +429,26 @@ window.Workspace = function() {
 
 			var areEquivalent = intM1notM2.automaton.isEmpty() && intM2notM1.automaton.isEmpty();
 			equivalenceLabel().innerHTML = "The selected expressions are " + (areEquivalent ? "" : "not ") + "equivalent.";
+		};
+
+		containmentButton().onclick = function() {
+			var expressions = getCheckedExpressions();
+			if (expressions.length != 2) {
+				self.error(ERROR_INVALID_OPERATION);
+				return;
+			}
+
+			var firstAutomaton = expressions[0].automaton;
+			var secondAutomaton = expressions[1].automaton;
+
+			var firstLanguage = expressions[0].regex.string;
+			var secondLanguage = expressions[1].regex.string;
+
+			var check1 = secondAutomaton.isContained(firstAutomaton);
+			var check2 = firstAutomaton.isContained(secondAutomaton);
+
+			equivalenceLabel().innerHTML  = secondLanguage + " is " + (check1 ? "" : "not ") + "contained in " + firstLanguage + "<br>";
+			equivalenceLabel().innerHTML += firstLanguage  + " is " + (check2 ? "" : "not ") + "contained in " + secondLanguage;
 		};
 	};
 
