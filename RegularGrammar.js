@@ -31,7 +31,7 @@ window.RegularGrammar = function(rgStr) {
 		if (dividedStr.length != 2) return null;
 
 		// // Check if left part of production is only one symbol
-		// if (dividedStr[0].length != 1) return null
+		if (dividedStr[0].length != 1) return null
 		var initialSymbol = dividedStr[0][0];
 
 		// Check if left of production is non terminal
@@ -213,7 +213,6 @@ window.RegularGrammar = function(rgStr) {
 			}
 
 			if (!self.addProductions(lines[i])) {
-				console.log(lines[i]);
 				throw Utilities.ERROR_INVALID_GRAMMAR;
 			}
 		}
