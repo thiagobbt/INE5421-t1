@@ -149,36 +149,6 @@ window.FiniteAutomaton = function() {
 		}
 	};
 
-	// Reads a char as input, changing the state of this automaton if there's
-	// a valid transition.
-	this.read = function(input) {
-		if (input == null) return;
-		input = input.toString();
-		var length = input.length;
-		if (length < 1) return;
-		if (length > 1) {
-			for (var i = 0; i < length; i++) {
-				self.read(input[i]);
-			}
-			return;
-		}
-
-		if (self.stateList.length == 0) return;
-		if (self.initialState === null || self.currentState === null) return;
-
-		if (!self.transitions.hasOwnProperty(self.currentState)
-			|| !self.transitions[self.currentState].hasOwnProperty(input)) {
-			self.currentState = null;
-			return;
-		}
-		self.currentState = self.transitions[self.currentState][input][0];
-	};
-
-	// Returns to the initial state.
-	this.reset = function() {
-		self.currentState = self.initialState;
-	};
-
 	// Checks if this automaton is on an accepting state.
 	this.accepts = function() {
 		return self.acceptingStates.includes(self.currentState);
@@ -663,10 +633,6 @@ window.FiniteAutomaton = function() {
 		return Array.from(vertices).filter(obj => (obj.name == name))[0];
 	}
 
-	function exceptVertex(name, vertices) {
-		return vertices.filter(obj => (obj.name != name));
-	}
-
 	this.isCyclic = function() {
 		var vertices = new Set([]);
 		this.stateList.forEach((state) => {
@@ -703,18 +669,5 @@ window.FiniteAutomaton = function() {
 		return vertices.size != 0;
 	}
 };
-
-// Receives a JSON representation of an automaton and returns
-// an instance representing it.
-FiniteAutomaton.load = function(object) {
-	var result = new FiniteAutomaton();
-	for (var prop in object) {
-		if (object.hasOwnProperty(prop)) {
-			result[prop] = object[prop];
-		}
-	}
-	return result;
-};
-
 
 })();

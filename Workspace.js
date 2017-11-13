@@ -1,11 +1,8 @@
 (function() {
 "use strict";
 
-var ERROR_INVALID_REGEX = "Invalid regular expression";
 var ERROR_INVALID_OPERATION = "Invalid operation";
-var ERROR_ALREADY_MINIMIZED = "The selected expression is already minimized";
-var NO_TRANSITION = "—";
-var INITIAL_STATE = "➞";
+var INITIAL_STATE = Utilities.TRANSITION_SYMBOL;
 var ACCEPTING_STATE = "<span class='accepting_state'>*</span>";
 var TRANSITION_SYMBOL = "δ";
 var MINIMIZED_PREFIX = "[MIN]";
@@ -22,14 +19,6 @@ var rgContainer = function() {
 
 var erContainer = function() {
 	return $("#er_main");
-};
-
-var currentRgContainer = function() {
-	return $("#current_rg");
-};
-
-var pointers = function() {
-	return $(".productionPointer");
 };
 
 var automatonCloseButton = function() {
@@ -92,12 +81,6 @@ var node = function(tag) {
 	return document.createElement(tag);
 };
 
-var genCell = function(content, isLabel) {
-	var cell = node(isLabel ? "th" : "td");
-	cell.innerHTML = content;
-	return cell;
-};
-
 var genAutomatonID = function(id) {
 	return "aut" + id;
 };
@@ -132,15 +115,11 @@ window.Workspace = function() {
 			automaton: automaton
 		};
 	}
-
 	this.buildExprObject = buildExprObject;
 
 	// Updates the UI, replacing all previous content with the informations
 	// about the current RegularGrammar.
 	function updateGrammarUI() {
-		// rgContainer().innerHTML = "";
-		// updateEvents();
-
 		if (grammarAutomatonButton()) {
 			grammarAutomatonButton().forEach((btn) => {
 				btn.onclick = function() {
@@ -167,8 +146,6 @@ window.Workspace = function() {
 		var numChecked = checked.length;
 		var visible = "inline";
 		deleteButton().style.display = (numChecked > 0) ? visible : "none";
-		// minimizeButton().style.display = (numChecked == 1) ? visible : "none";
-		// grButton().style.display = (numChecked == 1) ? visible : "none";
 		intersectionButton().style.display = (numChecked == 2) ? visible : "none";
 		unionButton().style.display = (numChecked == 2) ? visible : "none";
 		equivalenceButton().style.display = (numChecked == 2) ? visible : "none";
@@ -201,7 +178,6 @@ window.Workspace = function() {
 				btn.onclick = function() {
 					var id = this.parentElement.parentElement.parentElement.id.replace("aut", "");
 					self.expressionList[id].automaton.toGrammar();
-					// console.log(self.expressionList[id]);
 				}
 			});
 		}
@@ -320,7 +296,6 @@ window.Workspace = function() {
 		var row = node("td");
 		row.innerHTML = grammar.string.replace(/</g, '&lt;').replace(/([^-])>/g, '$1&gt;').replace(/\n/g, "<br>");
 
-		// row.appendChild(cell);
 		table.appendChild(row);
 
 		rgContainer().appendChild(table);
@@ -346,7 +321,6 @@ window.Workspace = function() {
 			self.currentRegularGrammar = rg;
 		}
 
-		// currentRgContainer().innerHTML = instance.string.replace(/</g, '&lt;').replace(/([^-])>/g, '$1&gt;').replace(/\n/g, "<br>");
 		printGrammar(instance);
 		updateGrammarUI();
 		return true;
@@ -466,6 +440,11 @@ window.Workspace = function() {
 		return result;
 	}
 
+	// Returns an object containing:
+	// - An ID
+	// - A regex instance with a properly formatted name corresponding
+	//   to the intersection between the given expression objects
+	// - A finite automaton that recognizes the union of two languages
 	function buildUnionObj(firstObj, secondObj) {
 		var result = buildExprObject(null);
 		result.regex.string = UNION_PREFIX + " {" + firstObj.regex.string + ", " + secondObj.regex.string + "}";
@@ -580,7 +559,7 @@ window.Workspace = function() {
 				cell.innerHTML = printableState;
 				row.appendChild(cell);
 				for (var j = 0; j < alphabet.length; j++) {
-					var content = NO_TRANSITION;
+					var content = Utilities.NO_TRANSITION;
 					if (transitions[state]
 						&& transitions[state].hasOwnProperty(alphabet[j])) {
 						content = transitions[state][alphabet[j]];
@@ -615,7 +594,7 @@ window.Workspace = function() {
 	this.addRegex = function(regex) {
 		var instance = new Regex(regex);
 		if (!instance.isValid()) {
-			self.error(ERROR_INVALID_REGEX);
+			self.error(Utilities.ERROR_INVALID_REGEX);
 			return false;
 		}
 		var obj;

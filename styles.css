@@ -8,15 +8,6 @@ body {
 	width: 50%;
 }
 
-#file_selector {
-	display: none;
-}
-
-#file_buttons {
-	margin-bottom: 5px;
-	text-align: center;
-}
-
 .content {
 	display: table;
 	height: 50%;
@@ -56,7 +47,7 @@ body {
 	z-index: 99;
 }
 
-#analyze_btn {
+#add_grammar_btn {
 	margin-top: 5px;
 }
 
@@ -72,11 +63,6 @@ body {
 	word-wrap: break-word;
 }
 
-.main tr.antiLL1 td:first-child {
-	color: red;
-	font-weight: bold;
-}
-
 .main th {
 	background-color: #DDD;
 }
@@ -89,14 +75,6 @@ body {
 
 #rg_main td {
 	text-align: left;
-}
-
-span.notOK {
-	color: red;
-}
-
-span.ok {
-	color: green;
 }
 
 .main table.padded th, .main table.padded td {

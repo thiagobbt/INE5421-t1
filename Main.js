@@ -38,24 +38,24 @@ if (!Array.prototype.split) {
 	};
 }
 
-	if (!Array.prototype.splitFirst) {
-		Array.prototype.splitFirst = function(separator) {
-			var outArray = [];
+if (!Array.prototype.splitFirst) {
+	Array.prototype.splitFirst = function(separator) {
+		var outArray = [];
 
-			var separatorIndex = this.indexOf(separator);
-			outArray.push(this.slice(0, separatorIndex));
-			outArray.push(this.slice(separatorIndex+1));
+		var separatorIndex = this.indexOf(separator);
+		outArray.push(this.slice(0, separatorIndex));
+		outArray.push(this.slice(separatorIndex+1));
 
-			return outArray;
-		};
-	}
+		return outArray;
+	};
+}
 
 window.workspace = new Workspace();
 
 addEventListener("load", function() {
 	workspace.initEvents();
 
-	$("#analyze_btn").addEventListener("click", function() {
+	$("#add_grammar_btn").addEventListener("click", function() {
 		if (workspace.addRegularGrammar($("#rg").value)) {
 			$("#rg").value = "";
 		}

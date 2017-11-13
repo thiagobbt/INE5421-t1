@@ -19,7 +19,6 @@ window.Utilities = {
 
 	// Special symbols
 	EPSILON: "&",
-	DOLLAR: "$",
 	TRANSITION_SYMBOL: "➞",
 	NO_TRANSITION: "—",
 
@@ -30,27 +29,7 @@ window.Utilities = {
 
 	// Error messages
 	ERROR_INVALID_GRAMMAR: "Invalid grammar",
-	ERROR_INVALID_PRODUCTION: "Invalid production",
-	ERROR_NOT_LL1: "The grammar is not LL(1)",
 	INVALID_REGEX: "Error: Invalid regular expression",
-
-	// Labels
-	RECURSION_TYPES: {
-		0: "None",
-		1: "<span class='notOK'>Direct</span>",
-		2: "<span class='notOK'>Indirect</span>"
-	},
-
-	FACTORIZATION_TYPES: {
-		0: "Factored",
-		1: "<span class='notOK'>Direct</span>",
-		2: "<span class='notOK'>Indirect</span>"
-	},
-
-	SIMULATION_STATUS: {
-		0: "<span class='notOK'>Rejected</span>",
-		1: "<span class='ok'>Accepted</span>"
-	},
 
 	operatorInfo: _operatorInfo,
 
@@ -81,17 +60,6 @@ window.Utilities = {
 	isTerminalOrEmpty: function(symbol) {
 		return !Utilities.isNonTerminal(symbol) || symbol == Utilities.EPSILON;
 	},
-
-	// Removes all duplicated elements of a numeric array.
-	// removeDuplicates: function(array) {
-	// 	array.sort();
-	// 	for (var i = 0; i < array.length; i++) {
-	// 		if (array[i] == array[i + 1]) {
-	// 			array.splice(i + 1, 1);
-	// 			i--;
-	// 		}
-	// 	}
-	// },
 
 	removeDuplicates: function(a) {
 		var prims = {"boolean":{}, "number":{}, "string":{}}, objs = [];

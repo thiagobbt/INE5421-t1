@@ -268,7 +268,7 @@ window.Node = function() {
 
 		if (self.right) {
 			self.right.fillLeafList(leafContainer);
-		}		
+		}
 	};
 
 	this.debug = function() {
