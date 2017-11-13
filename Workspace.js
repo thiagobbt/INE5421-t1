@@ -438,14 +438,29 @@ window.Workspace = function() {
 				return;
 			}
 
-			var firstAutomaton = expressions[0].automaton;
-			var secondAutomaton = expressions[1].automaton;
+			var firstExpr = expressions[0];
+			var secondExpr = expressions[1];
 
-			var firstLanguage = expressions[0].regex.string;
-			var secondLanguage = expressions[1].regex.string;
+			var M1 = firstExpr.automaton;
+			var M2 = secondExpr.automaton;
 
-			var check1 = secondAutomaton.isContained(firstAutomaton);
-			var check2 = firstAutomaton.isContained(secondAutomaton);
+			var firstLanguage = firstExpr.regex.string;
+			var secondLanguage = secondExpr.regex.string;
+
+			var notM1 = buildComplementObj(firstExpr);
+			self.addObject(notM1);
+
+			var notM2 = buildComplementObj(secondExpr);
+			self.addObject(notM2);
+
+			var intM1notM2 = buildIntersectionObj(firstExpr, notM2);
+			self.addObject(intM1notM2);
+
+			var intM2notM1 = buildIntersectionObj(secondExpr, notM1);
+			self.addObject(intM2notM1);
+
+			var check1 = M2.isContained(M1);
+			var check2 = M1.isContained(M2);
 
 			equivalenceLabel().innerHTML  = secondLanguage + " is " + (check1 ? "" : "not ") + "contained in " + firstLanguage + "<br>";
 			equivalenceLabel().innerHTML += firstLanguage  + " is " + (check2 ? "" : "not ") + "contained in " + secondLanguage;
